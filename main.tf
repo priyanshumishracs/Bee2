@@ -182,3 +182,19 @@ resource "azurerm_linux_virtual_machine" "vms" {
   }
 
 }
+resource "local_file" "workspace_credentials" {
+  filename = "${path.module}/credentials_${terraform.workspace}.txt"
+  content  = join("\n", flatten([
+    ["Workspace: ${terraform.workspace}", ""],
+    [
+      for idx in range(length(var.Vm_names)) : [
+        "VM Name: ${terraform.workspace}-${var.Vm_names[idx]}",
+        "Username: ${var.Vm_usernames[idx]}",
+        "Password: ${random_password.vm_password[idx].result}",
+        "Private IP: ${azurerm_network_interface.nic[idx].private_ip_address}",
+        "Public IP: ${idx == 0 ? azurerm_public_ip.pub_ip.ip_address : "N/A"}",
+        "--------------------------------------"
+      ]
+    ]
+  ]))
+}
