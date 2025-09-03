@@ -1,6 +1,6 @@
 variable "resource_group_name" {
   type    = string
-  default = "rg"
+  default = "econiwaas"
 }
 
 variable "location" {
@@ -41,7 +41,7 @@ variable "public_ip_name" {
 }
 variable "nic_name" {
   type    = list(string)
-  default = ["app-nic1", "db-nic2"]
+  default = ["app-nic", "db-nic"]
 }
 
 variable "Vm_names" {
@@ -69,5 +69,5 @@ variable "Vms_os_disk_name" {
 variable "Vm_os_disk_sizes" {
   description = "List of OS disk sizes for each VM"
   type        = list(number)
-  default     = [30, 30] # Different disk sizes for each VM
+  default     = [30, 32] # Different disk sizes for each VM
 }
