@@ -1,7 +1,7 @@
 
 # Resource Group
 resource "azurerm_resource_group" "rg" {
-  name     = "${terraform.workspace}-${var.resource_group_name}"
+  name     = "${terraform.workspace}-enterprise-rg"
   location = var.location
 }
 
