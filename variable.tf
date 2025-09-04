@@ -23,7 +23,7 @@ variable "Vnet_subnet1_name" {
 }
 variable "Vnet_subnet1_address_prefix" {
   type    = string
-  default = "10.2.0.0/16"
+  default = "10.2.0.0/24"
 }
 variable "Vnet_subnet2_name" {
   type    = string
@@ -31,7 +31,7 @@ variable "Vnet_subnet2_name" {
 }
 variable "Vnet_subnet2_address_prefix" {
   type    = string
-  default = "10.2.1.0/16"
+  default = "10.2.1.0/24"
 }
 
 #public ip 
@@ -52,7 +52,7 @@ variable "Vm_names" {
 variable "Vmsize" {
   description = "List of VM sizes for the linux virtual machines"
   type        = list(string)
-  default     = ["Standard_D32aS_v5", "Standard_D4aS_v5"] # Example sizes
+  default     = ["Standard_D16aS_v5", "Standard_D4aS_v5"] # Example sizes
 }
 
 variable "Vm_usernames" {
