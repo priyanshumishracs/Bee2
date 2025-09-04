@@ -1,6 +1,6 @@
-variable "resource_group_name" {
+variable "project" {
   type    = string
-  default = "econiwaas"
+  default = "Econiwas"
 }
 
 variable "location" {
@@ -19,7 +19,7 @@ variable "vnet_address_space" {
 
 variable "Vnet_subnet1_name" {
   type    = string
-  default = "subnet1"
+  default = "app_subnet"
 }
 variable "Vnet_subnet1_address_prefix" {
   type    = string
@@ -27,7 +27,7 @@ variable "Vnet_subnet1_address_prefix" {
 }
 variable "Vnet_subnet2_name" {
   type    = string
-  default = "subnet-2"
+  default = "Db_subnet"
 }
 variable "Vnet_subnet2_address_prefix" {
   type    = string
@@ -37,16 +37,16 @@ variable "Vnet_subnet2_address_prefix" {
 #public ip 
 variable "public_ip_name" {
   type    = string
-  default = "app-pub-ip1"
+  default = "app_pub_ip"
 }
 variable "nic_name" {
   type    = list(string)
-  default = ["app-nic", "db-nic"]
+  default = ["app_nic", "db_nic"]
 }
 
 variable "Vm_names" {
   type = list(string)
-  default = ["app", "db"] 
+  default = ["app-server", "db-server"] 
 }
 
 variable "Vmsize" {
@@ -63,11 +63,20 @@ variable "Vm_usernames" {
 variable "Vms_os_disk_name" {
   description = "List of OS disk names for each VM"
   type        = list(string)
-  default     = ["app_osdisk", "db-os-disk"] # Example names
+  default     = ["prod_app_osdisk", "prod_db_osdisk"] # Example names
 }
 
 variable "Vm_os_disk_sizes" {
   description = "List of OS disk sizes for each VM"
   type        = list(number)
   default     = [30, 32] # Different disk sizes for each VM
+}
+variable "data_disk_names" {
+  type    = list(string)
+  default = ["app_datadisk", "db_datadisk"]
+}
+
+variable "data_disk_sizes" {
+  type    = list(number)
+  default = [128, 128]  # 50GB for app, 100GB for db
 }

@@ -1,13 +1,13 @@
 
 # Resource Group
 resource "azurerm_resource_group" "rg" {
-  name     = "${terraform.workspace}-enterprise-rg"
+  name     = "${var.project}_${terraform.workspace}_RG"
   location = var.location
 }
 
 # Virtual Network 1
 resource "azurerm_virtual_network" "Vnet" {
-  name                ="${terraform.workspace}-${var.vnet_name}"
+  name                ="${var.project}_${terraform.workspace}_Vnet"
   resource_group_name = azurerm_resource_group.rg.name
   location            = azurerm_resource_group.rg.location
   address_space       = var.vnet_address_space
@@ -15,21 +15,21 @@ resource "azurerm_virtual_network" "Vnet" {
 
 # Vnet1-Subnet1
 resource "azurerm_subnet" "subnet1" {
-  name                 = "${terraform.workspace}-${var.Vnet_subnet1_name}"
+  name                 = "${var.Vnet_subnet1_name}_${terraform.workspace}"
   resource_group_name  = azurerm_resource_group.rg.name
   virtual_network_name = azurerm_virtual_network.Vnet.name
   address_prefixes     = [var.Vnet_subnet1_address_prefix]
 }
 
 resource "azurerm_subnet" "subnet2" {
-  name                 = "${terraform.workspace}-${var.Vnet_subnet2_name}"
+  name                 = "${terraform.workspace}_${var.Vnet_subnet2_name}"
   resource_group_name  = azurerm_resource_group.rg.name
   virtual_network_name = azurerm_virtual_network.Vnet.name
   address_prefixes     = [var.Vnet_subnet2_address_prefix]
 }
 
 resource "azurerm_network_security_group" "app" {
- name = "${terraform.workspace}_${length(var.Vm_names)}-nsg"
+ name = "${terraform.workspace}_${var.Vm_names[0]}_nsg"
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
 
@@ -83,7 +83,7 @@ resource "azurerm_network_security_group" "app" {
 }
 
 resource "azurerm_network_security_group" "db" {
-  name = "${terraform.workspace}_${length(var.Vm_names)}-nsg2"
+  name = "${terraform.workspace}_${var.Vm_names[1]}_nsg"
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
 
@@ -113,7 +113,7 @@ resource "azurerm_network_security_group" "db" {
 }
 
 resource "azurerm_public_ip" "pub_ip" {
-  name                = "${terraform.workspace}-${var.public_ip_name}"
+  name                = "${terraform.workspace}_${var.public_ip_name}"
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
   allocation_method   = "Static"
@@ -121,7 +121,7 @@ resource "azurerm_public_ip" "pub_ip" {
 }
 resource "azurerm_network_interface" "nic" {
   count               = length(var.nic_name)  # ensures flexibility
-  name                = "${terraform.workspace}-${var.nic_name[count.index]}"
+  name                = "${terraform.workspace}_${var.nic_name[count.index]}"
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
   depends_on = [azurerm_subnet.subnet1, azurerm_subnet.subnet2]  # Ensure subnets exist first
@@ -173,15 +173,35 @@ resource "azurerm_linux_virtual_machine" "vms" {
     storage_account_type = "Standard_LRS"                          # Standard HDD for OS disk
     disk_size_gb         = element(var.Vm_os_disk_sizes, count.index) # Using element() to get the disk size from the list
   }
-  
+
    source_image_reference {
     publisher = "Canonical"
     offer     = "0001-com-ubuntu-server-focal"
     sku       = "20_04-lts"
     version   = "latest"
   }
-
 }
+# Create Data Disks
+resource "azurerm_managed_disk" "data_disk" {
+  count                = 2
+  name                 = "${terraform.workspace}-${var.data_disk_names[count.index]}"
+  location             = azurerm_resource_group.rg.location
+  resource_group_name  = azurerm_resource_group.rg.name
+  storage_account_type = "Standard_LRS"
+  create_option        = "Empty"
+  disk_size_gb         = var.data_disk_sizes[count.index]
+}
+
+# Attach Data Disks to VMs
+resource "azurerm_virtual_machine_data_disk_attachment" "data_attachment" {
+  count              = 2
+  managed_disk_id    = azurerm_managed_disk.data_disk[count.index].id
+  virtual_machine_id = azurerm_linux_virtual_machine.vms[count.index].id
+  lun                = "10"
+  caching            = "ReadWrite"
+}
+
+
 resource "local_file" "workspace_credentials" {
   filename = "${path.module}/credentials_${terraform.workspace}.txt"
   content  = join("\n", flatten([
