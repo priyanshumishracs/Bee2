@@ -156,7 +156,7 @@ resource "random_password" "vm_password" {
 
 resource "azurerm_linux_virtual_machine" "vms" {
   count               = 2
-  name                = "${terraform.workspace}-${var.Vm_names[count.index]}"                                    #  "linuxvm-${count.index}"
+  name                = "${terraform.workspace}-${var.project}${var.Vm_names[count.index]}"                                    #  "linuxvm-${count.index}"
   resource_group_name = azurerm_resource_group.rg.name
   location            = azurerm_resource_group.rg.location
   size                = element(var.Vmsize, count.index)
@@ -170,7 +170,7 @@ resource "azurerm_linux_virtual_machine" "vms" {
   os_disk {
     name                 = element(var.Vms_os_disk_name, count.index)
     caching              = "ReadWrite"
-    storage_account_type = "Standard_LRS"                          # Standard HDD for OS disk
+    storage_account_type = element(var.os_disk_storage_types, count.index)                         # Standard HDD for OS disk
     disk_size_gb         = element(var.Vm_os_disk_sizes, count.index) # Using element() to get the disk size from the list
   }
 
@@ -187,7 +187,7 @@ resource "azurerm_managed_disk" "data_disk" {
   name                 = "${terraform.workspace}-${var.data_disk_names[count.index]}"
   location             = azurerm_resource_group.rg.location
   resource_group_name  = azurerm_resource_group.rg.name
-  storage_account_type = "Standard_LRS"
+  storage_account_type = element(var.data_disk_storage_types, count.index)
   create_option        = "Empty"
   disk_size_gb         = var.data_disk_sizes[count.index]
 }
@@ -197,7 +197,7 @@ resource "azurerm_virtual_machine_data_disk_attachment" "data_attachment" {
   count              = 2
   managed_disk_id    = azurerm_managed_disk.data_disk[count.index].id
   virtual_machine_id = azurerm_linux_virtual_machine.vms[count.index].id
-  lun                = "10"
+  lun                = "1"
   caching            = "ReadWrite"
 }
 
