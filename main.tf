@@ -174,12 +174,12 @@ resource "azurerm_linux_virtual_machine" "vms" {
     disk_size_gb         = element(var.Vm_os_disk_sizes, count.index) # Using element() to get the disk size from the list
   }
 
-   source_image_reference {
-    publisher = "Canonical"
-    offer     = "0001-com-ubuntu-server-focal"
-    sku       = "24_04-lts"
-    version   = "latest"
-  }
+source_image_reference {
+  publisher = "Canonical"
+  offer     = "ubuntu-24_04-lts"
+  sku       = "server"
+  version   = "latest"
+}
 }
 # Create Data Disks
 resource "azurerm_managed_disk" "data_disk" {
